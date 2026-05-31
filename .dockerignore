@@ -1,0 +1,9 @@
+.git
+.DS_Store
+.cache
+dns-proxy-server
+dns-proxy.sqlite3
+*.sqlite3
+tmp
+dist
+coverage.out

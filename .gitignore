@@ -1,0 +1,5 @@
+.cache/
+data/
+/dns-proxy-server
+*.sqlite3
+coverage.out
