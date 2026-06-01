@@ -177,3 +177,8 @@ struct GlassCard<Content: View>: View {
             .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 28, style: .continuous))
     }
 }
+
+#Preview {
+    ContentView()
+        .environmentObject(DNSProxyModel())
+}
