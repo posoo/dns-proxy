@@ -1,10 +1,14 @@
 # dns-proxy
 
-A client/server DNS proxy suite for querying hostnames remotely. This repository currently implements the server side first.
+A client/server DNS proxy suite for querying hostnames remotely. This repository currently implements the Go server and an initial iOS Packet Tunnel client.
+
+The first iOS client scaffold lives in `ios/` and uses a VPN-style Packet Tunnel Network Extension for DNS interception on personal devices.
 
 ## Server
 
-The server accepts DNS-over-HTTP proxy requests from clients, resolves the DNS query from the server, and returns a normal DNS wire response. The first client can use the raw endpoint transparently by base64-encoding the intercepted DNS packet.
+The server accepts DNS-over-HTTP proxy requests from clients, resolves the DNS query from the server, and returns a normal DNS wire response. It supports allowlisted UDP, TCP, DoT, and DoH upstream resolvers, response caching, optional SQLite query logging, and a Basic-auth protected admin surface.
+
+The iOS client uses the raw endpoint transparently by base64-encoding intercepted DNS packets. If the client omits `resolver_name`, the server resolves through the host system resolver from `/etc/resolv.conf`.
 
 ### API
 
@@ -41,7 +45,6 @@ go run ./cmd/dns-proxy-server -config config.example.yaml
 ```
 
 Open `http://localhost:8080/admin` and sign in with the configured admin credentials.
-The example config writes logs to `/data/dns-proxy.sqlite3`; change `logging.path` or disable logging for a purely local run if `/data` is not available.
 
 ### Docker
 
@@ -50,7 +53,7 @@ docker build -t dns-proxy-server .
 docker run --rm -p 8080:8080 -v "$PWD/data:/data" dns-proxy-server
 ```
 
-Mount `/data` if SQLite query history should persist across container restarts.
+For Docker deployments, set `logging.path` in `config.example.yaml` to a mounted path such as `/data/dns-proxy.sqlite3` if SQLite query history should persist across container restarts. The sample config defaults to a relative `dns-proxy.sqlite3` path so `go run` works locally without creating `/data`.
 
 ### Configuration
 
@@ -61,6 +64,17 @@ See `config.example.yaml`. Resolvers are allowlisted by name and support:
 - `doh` with `url: "https://..."`
 
 Clients select a configured resolver by `resolver_name`; arbitrary client-supplied resolver addresses are intentionally not supported in v1. If `resolver_name` is omitted, the server uses its system default resolver.
+
+## iOS Client
+
+The iOS app lives in `ios/` and uses a VPN-style Packet Tunnel Network Extension for personal devices. It installs a DNS-only tunnel, captures UDP DNS packets, sends the DNS wire payload to `POST /api/v1/query/raw`, and writes the server response back to iOS.
+
+Use these bundle IDs unless you intentionally rename the app:
+
+- App: `dev.senlin.dnsproxy.client`
+- Extension: `dev.senlin.dnsproxy.client.PacketTunnelExtension`
+
+Both targets need the Network Extensions capability with `packet-tunnel-provider`, and provisioning profiles must be regenerated after enabling the capability. See `ios/README.md` for device testing notes, including using the server's LAN/public URL instead of `127.0.0.1` from the phone.
 
 ### Tests
 

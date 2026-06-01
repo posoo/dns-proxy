@@ -1,4 +1,7 @@
 .cache/
+.DS_Store
+*.xcodeproj/xcuserdata/
+**/xcuserdata/
 data/
 /dns-proxy-server
 *.sqlite3

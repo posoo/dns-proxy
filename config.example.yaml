@@ -33,5 +33,8 @@ cache:
 
 logging:
   enabled: true
-  path: "/data/dns-proxy.sqlite3"
+  # Local runs can use a relative SQLite path. For Docker persistence, change
+  # this to a mounted path such as "/data/dns-proxy.sqlite3" and run the
+  # container with a matching volume, for example: -v "$PWD/data:/data".
+  path: "dns-proxy.sqlite3"
   max_rows: 10000
